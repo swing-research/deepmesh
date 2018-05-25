@@ -8,6 +8,7 @@ import numpy as np
 
 from preprocess import IMAGE_DIM
 
+# These are overwritten by matrices when the Projnet is called.
 P = 0
 Pinv = 0
 
@@ -32,11 +33,19 @@ def split_npys(number_of_images, original_path, input_path, val_size=100):
     return training_input.astype('float32'), test_input.astype('float32'), training_truth.astype('float32'), test_truth.astype('float32')    
 
 def projection_loss(yTrue, yPred):
+    # This method calculates the loss between the projection of an image and
+    # the ProjNet output.
+    # The inputs are the original image and the CNN output.
+    
+    # First the basis functions are applied to the original images to get 
+    # coefficients.
     yTrue = keras.backend.batch_flatten(yTrue)
     Pt = P.T
     A = K.variable(Pt)
     c = K.dot(yTrue,A)    
     
+    # Secondly, the pseudoinverse of the basis function is applied to the
+    # coefficients to obtain projections.
     Pinvt = Pinv.T
     A = K.variable(Pinvt)
     out = K.dot(c,A)
@@ -45,6 +54,11 @@ def projection_loss(yTrue, yPred):
     return keras.losses.mean_squared_error(out, yPred)
 
 def apply_P(x):
+    # This method applied the basis function to the output of the previous 
+    # CNN layer to get coefficients.
+    # The input is the output of the CNN. The output of this method is passed 
+    # to apply_Pinv().
+    
     import keras
     
     x = keras.backend.batch_flatten(x)
@@ -54,6 +68,9 @@ def apply_P(x):
     return out
         
 def apply_Pinv(x):
+    # This method applies the pseudoinverse of the basis functions to get an
+    # estiamte of the projection of the original image.
+    
     import keras
      
     Pinvt = Pinv.T
@@ -62,7 +79,9 @@ def apply_Pinv(x):
     out = K.reshape(out, (-1,IMAGE_DIM,IMAGE_DIM,1))
     return out
 
-def make_cnn(channels):    
+def make_cnn(channels):
+    # This method creates a ProjNet model.
+    
     filter_size = 3
     filter_padding = int((filter_size -1)/2)
     input_shape = (IMAGE_DIM, IMAGE_DIM, 1)
@@ -156,6 +175,7 @@ def make_cnn(channels):
     
     conv_2D_transpose = Conv2DTranspose(1, filter_size, activation='relu')(batch11_3)
     
+    # Lambda layers perform matrix multiplication to project layer input onto mesh
     lambda1 = Lambda(apply_P)(conv_2D_transpose)
     output = Lambda(apply_Pinv)(lambda1)
        
@@ -165,6 +185,8 @@ def make_cnn(channels):
     
 def compile_fit_cnn(model, batch_size, epochs, lr, model_name,
                     training_input, test_input, training_truth, test_truth):
+    # This method compiles the CNN and trains it.
+    
     model.compile(loss=projection_loss,
                   optimizer=keras.optimizers.Adam(lr=lr),
                   metrics=['mse'])
@@ -191,20 +213,5 @@ def compile_fit_cnn(model, batch_size, epochs, lr, model_name,
 
 ###############################################################################     
 if __name__ == "__main__":
-    training_input, test_input, training_truth, test_truth = split_npys(
-            11000, original_path='originals20k.npy', 
-            input_path='custom25_10db.npy')
-    print('Training input shape: ', training_input.shape)
-    print('Test input shape: ', test_input.shape)
-    print('Training truth shape: ', training_truth.shape)
-    print('Test truth shape: ', test_truth.shape)
-    
-    model = make_cnn(channels=32)
-    name='model0.h5'
-    compile_fit_cnn(model, batch_size=50, epochs=70, lr=1e-3, model_name=name, 
-                    training_input=training_input, test_input=test_input, 
-                    training_truth=training_truth, test_truth=test_truth)
-    compile_fit_cnn(model, batch_size=50, epochs=30, lr=1e-4, model_name=name, 
-                    training_input=training_input, test_input=test_input, 
-                    training_truth=training_truth, test_truth=test_truth)
+    pass
  

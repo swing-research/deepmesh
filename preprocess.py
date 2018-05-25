@@ -11,11 +11,11 @@ def multiproc_custom_transform():
     images = np.load('originals20k.npy')    
     print ('loaded images')
     
-    nprocs = min(2, number_of_imgs)
+    nprocs = min(4, number_of_imgs)
     pool = mp.Pool(processes=nprocs)
     
     results = [pool.apply_async(positive_custom_transform_worker,
-                                args=(images[i,:,:,0], F, i)) for i in range(0, 12)]
+                                args=(images[i,:,:,0], F, i)) for i in range(0, number_of_imgs)]
 
     for p in results:
         p.get()
