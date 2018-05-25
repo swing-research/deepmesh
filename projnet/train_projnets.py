@@ -46,7 +46,7 @@ def main():
         # Make each ProjNet
         model = make_cnn(channels=32)
         name= root + str(mesh) + '.h5'
-        compile_fit_cnn(model, batch_size=50, epochs=2, lr=1e-3, model_name=name, 
+        compile_fit_cnn(model, batch_size=50, epochs=25, lr=1e-3, model_name=name, 
                         training_input=training_input, test_input=test_input, 
                         training_truth=training_truth, test_truth=test_truth)
         

@@ -18,7 +18,7 @@ def train_projnets_parser():
     parser.add_argument('--nets', '--networks', help='Number of ProjNets to train', 
                         type=int, default=20)
     
-    parser.add_argument('--path', '--projnetspath', help='DIrectory to store ProjNets.'
+    parser.add_argument('--path', '--projnetspath', help='Directory to store ProjNets.'
                         + ' Ensure this directory exists.', 
                         type=str, default='projnets')
     
@@ -26,10 +26,7 @@ def train_projnets_parser():
     
     return args
     
-def print_args(args):
-    print(args)
-    
 ###############################################################################
 if __name__ == '__main__':
     args = train_projnets_parser()
-    print_args(args)
+    print(args)
