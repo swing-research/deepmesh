@@ -5,7 +5,10 @@ from scipy import misc
 import matplotlib as mpl
 mpl.use('Agg')
 
+import sys
+sys.path.insert(0, '../utils/')
 from preprocess import IMAGE_DIM
+from SNRab import SNRab
 from train_projnets import get_P_Pinv
 import projnet
 from projnet import projection_loss
@@ -88,28 +91,28 @@ def reconstruct_images_TV(P_stacked, coefs, lam):
     
     return recons
 
-def SNRab(x, x_hat, db=True):
-    # better safe than sorry (matrix vs array)
-    xx = x.flatten()
-    yy = x_hat.flatten()
-    
-    u = xx.sum()
-    v = (xx*yy).sum()
-    w = (yy**2).sum()
-    p = yy.sum()
-    q = len(xx)**2
-    
-    a = (v*q - u*p)/(w*q - p*p)
-    b = (w*u - v*p)/(w*q - p*p)
-    
-    SNRopt = np.sqrt((xx**2).sum() / ((xx - (a*yy + b))**2).sum())
-    SNRraw = np.sqrt((xx**2).sum() / ((xx - yy)**2).sum())
-    
-    if db:
-        SNRopt = 20*np.log10(SNRopt)
-        SNRraw = 20*np.log10(SNRraw)
-
-    return SNRopt, SNRraw, a, b
+#def SNRab(x, x_hat, db=True):
+#    # better safe than sorry (matrix vs array)
+#    xx = x.flatten()
+#    yy = x_hat.flatten()
+#    
+#    u = xx.sum()
+#    v = (xx*yy).sum()
+#    w = (yy**2).sum()
+#    p = yy.sum()
+#    q = len(xx)**2
+#    
+#    a = (v*q - u*p)/(w*q - p*p)
+#    b = (w*u - v*p)/(w*q - p*p)
+#    
+#    SNRopt = np.sqrt((xx**2).sum() / ((xx - (a*yy + b))**2).sum())
+#    SNRraw = np.sqrt((xx**2).sum() / ((xx - yy)**2).sum())
+#    
+#    if db:
+#        SNRopt = 20*np.log10(SNRopt)
+#        SNRraw = 20*np.log10(SNRraw)
+#
+#    return SNRopt, SNRraw, a, b
 
 def save_results(originals, test_input, recons, lam, file_info):
     # Saves the reconstructions as .png and .npy files.
@@ -119,7 +122,7 @@ def save_results(originals, test_input, recons, lam, file_info):
     # Our forward operator consists of sensors placed unifromly in an inscribed
     # circle, so we are interested in the reconstruction in that region. We 
     # have a mask to zero the regions outside the sensor coverage.
-    mask = (np.load('mask.npy')).reshape((IMAGE_DIM, IMAGE_DIM))
+    mask = (np.load('../mask.npy')).reshape((IMAGE_DIM, IMAGE_DIM))
     
     snrs = np.zeros(originals.shape[0])
     
@@ -151,14 +154,14 @@ def save_results(originals, test_input, recons, lam, file_info):
 #########################################
 if __name__ == "__main__":    
     # load the test images and their constrained least squares reconstruction.
-    originals = np.load('geo_originals.npy')
-    test_input = np.load('geo_pos_recon_10db.npy')
+    originals = np.load('../geo_originals.npy')
+    test_input = np.load('../geo_pos_recon_infdb.npy')
     
     main_dir = 'projnets/' # directory where ProjNets are stored
     networks = 20 # number of ProjNets to reconstruct from
     
     # Do we need to get stacked basis functions and coefficients?
-    coefs_required = False
+    coefs_required = True
     if (coefs_required == True):
         # Get the stacked basis function matrices and coefficients
         P_stacked, coefs = get_stacked_P_and_coefs(main_dir, networks, 

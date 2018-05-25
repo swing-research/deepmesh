@@ -6,6 +6,8 @@ from keras.models import Model
 
 import numpy as np
 
+import sys
+sys.path.insert(0, '../utils/')
 from preprocess import IMAGE_DIM
 
 # These are overwritten by matrices when the Projnet is called.
