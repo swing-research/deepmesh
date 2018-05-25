@@ -27,6 +27,13 @@ class DNN():
 
     """
     def __init__(self, **kwargs):
+        """Initializes subnet and loads in all required parameters
+
+        -- creates the required directories for storing results
+        -- creates appropriate placeholders for the tf.Graph()
+        -- builds the graph
+
+        """
         self.lr = kwargs['lr']
         self.niters = kwargs['niters']
         self.img_ch = kwargs['img_ch']
@@ -87,9 +94,8 @@ class DNN():
 
     def model(self):
         """
-        This is the neural net model function.
-        It assumes that self.x is already in the proper
-        required shape.
+        It assumes that self.x is already in the required shape 
+        (-1, img_size, img_size, img_ch)
         """
 
         # the forward model
@@ -199,7 +205,7 @@ class DNN():
         return None
 
     def eval(self, batch, test_name):
-        """batch should have the original images scaled to [0,1]"""
+        """batch should have the (true_imgs, measurements) scaled to [0,1]"""
 
         saver = tf.train.Saver()
         ntest = len(batch[0])

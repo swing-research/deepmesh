@@ -31,6 +31,14 @@ class SubNet():
     """
 
     def __init__(self, **kwargs):
+        """Initializes subnet and loads in all required parameters
+
+        -- creates the required directories for storing results
+        -- loads all projector matrices in the class instance
+        -- creates appropriate placeholders for the tf.Graph()
+        -- builds the graph
+
+        """
 
         self.lr = kwargs['lr']
         self.ntri = kwargs['ntri']
@@ -56,7 +64,6 @@ class SubNet():
         tf.reset_default_graph()
 
         # placeholders:
-        # required_projection output
         self.true_img = tf.placeholder(tf.float32,
                                        [None, self.img_size,
                                         self.img_size, self.img_ch])
@@ -82,6 +89,7 @@ class SubNet():
         return
 
     def load_projectors(self, n, dir):
+        """Loads n(int) projectors and their pseudoinverses from provided directory (dir, str)"""
         P = np.zeros((n, self.ntri, self.img_size**2))
         Pinv = np.zeros((n, self.img_size**2, self.ntri))
 
@@ -302,7 +310,7 @@ class SubNet():
         return None
 
     def eval(self, batch, test_name):
-        """batch should have (true_imgs, measurements)"""
+        """batch should have (true_imgs, measurements) scaled to [0,1]"""
 
         saver = tf.train.Saver()
         ntest = len(batch[0])

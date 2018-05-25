@@ -18,8 +18,8 @@ def nn(x, reuse=True, nchstart=32, act_fn=tf.nn.leaky_relu, TRAIN_FLAG=True, REG
 
     Returns
     -------
-    out: [batch_size, img_size*img_size] vectors that
-    will be struck with the projection for reconstruction
+    out: [batch_size, img_size*img_size] vectors on which the projection will be applied
+    reg_loss: scalar, regularization loss in the middle layer, 0 if REG is False
 
     """
     nchannels = nchstart
