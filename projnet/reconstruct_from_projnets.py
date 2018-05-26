@@ -166,33 +166,3 @@ def main():
 ###############################################################################
 if __name__ == "__main__":
     main()
-    
-#    # load the test images and their constrained least squares reconstruction.
-#    originals = np.load('../geo_originals.npy')
-#    test_input = np.load('../geo_pos_recon_infdb.npy')
-#    
-#    main_dir = 'projnets/' # directory where ProjNets are stored
-#    networks = 20 # number of ProjNets to reconstruct from
-#    
-#    # Do we need to get stacked basis functions and coefficients?
-#    coefs_required = True
-#    if (coefs_required == True):
-#        # Get the stacked basis function matrices and coefficients
-#        P_stacked, coefs = get_stacked_P_and_coefs(main_dir, networks, 
-#                                                   test_input)
-#    
-#        # Save stacked basis function matrices and coefficients for later use
-#        np.save('P_stacked.npy', P_stacked)
-#        np.save('coefs.npy', coefs)
-#    
-#    # Load stacked basis function matrices and coefficients
-#    P_stacked = np.load('P_stacked.npy')
-#    P_stacked = P_stacked[:networks*NUMBER_OF_COEFS]
-#    coefs = np.load('coefs.npy')
-#    coefs = coefs[:networks*NUMBER_OF_COEFS]
-#    
-#    # We have to find x that satisfies the equation: P_stacked x = coefs
-#    # We can use total variation regularization to do this
-#    lam = 4e-3 # TV regularization parameter. Found from some holdout set.
-#    reconstructions = reconstruct_images_TV(P_stacked, coefs, lam)
-#    save_results(originals, test_input, reconstructions, lam, 'noise10dB')

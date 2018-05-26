@@ -4,7 +4,7 @@ def train_projnets_parser():
     parser = argparse.ArgumentParser()
     
     parser.add_argument('--imgs', '--images', help='Number of images to load', 
-                        type=int, default=19600)
+                        type=int, default=10600)
     
     parser.add_argument('--val', '--validation', help='Number of images for validation', 
                         type=int, default=100)
