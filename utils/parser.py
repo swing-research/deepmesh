@@ -35,7 +35,7 @@ def parserMethod():
                         default=50, type=int, help='Number of triangles per mesh')
 
     args = parser.parse_args()
-    test(args)
+    # test(args)
 
     return args
 
