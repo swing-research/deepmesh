@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import scipy
+from gen_forward_op_parser import gen_forward_op_parser
 
 def check_bounds(pt, pt0, pt1):
     """Checks if the pt is within range of segment (pt0,pt1)"""
@@ -201,8 +201,10 @@ def gen_mask(points, grid_size):
     return grid
     
 def main():
-    nsensors = 25
-    grid_size = 128
+    args = gen_forward_op_parser()
+    
+    nsensors = args.n
+    grid_size = args.g
     sensor_locs = setup_grid(nsensors, grid_size)
 #    plot_sg(sensor_locs)
     
