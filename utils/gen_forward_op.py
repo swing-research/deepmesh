@@ -33,7 +33,7 @@ def get_li(im, end_pts, grid_size):
         line_params (ndarray): a 2(npts) x 2(dim) of array of end_pts
         
         grid_size (int): a cartesian grid of the given grid_size
-        is created with x=i and y=i lines with $i\in[grid_size]$
+        is created with x=i and y=i lines with $i \in [grid_size]$
         
     returns:
         all intersection points with the grid
@@ -62,7 +62,7 @@ def get_li(im, end_pts, grid_size):
     # python's pixel centers have integer coordinates. (i.e. pixel 10,10) will occupy
     # a Cartesian grid from [9.5,10.5]x[9.5,10.5]. So the grid that we calculated
     # our intersections with needs to be shifted by (0.5, 0.5) to get it in the required
-    # frame for calculation of pixels which intersect
+    # frame for estimating which pixels intersect
 
     # sort the pts acc to x-coordinate
     ind = np.argsort(new_int_points[:,0])
@@ -105,13 +105,13 @@ def test_get_li():
     im = np.ones((128,128))
     li, pts, x_ids = get_li(im, end_pts, 128)
     
-    # %matplotlib qt
     for i in range(len(x_ids[0])):
         im[x_ids[0][i],x_ids[1][i]] = np.random.rand()+1.1
     plt.figure(figsize=(10,10))
     plt.imshow(im)
     plt.plot(end_pts[:,0]+0.5,end_pts[:,1]+0.5,'--')
     plt.scatter(pts[:,0], pts[:,1], marker='x', c='r')
+    plt.show()
 
 
 # ## Scale to random sensor grid
@@ -206,20 +206,13 @@ def main():
     nsensors = args.n
     grid_size = args.g
     sensor_locs = setup_grid(nsensors, grid_size)
-#    plot_sg(sensor_locs)
     
     gen_mask(sensor_locs, grid_size)
     
     F = get_forward_op(sensor_locs, grid_size)
     
     store_mats(F, nsensors)
-    
-#    Finv = np.linalg.pinv(F)
-#    im = np.ones((128,128))
-#    g = apply_F(F, Finv, im)
-#    plt.figure()
-#    plt.imshow(g)
-#    plt.show()
+
     return None
 
 ###############################################################################

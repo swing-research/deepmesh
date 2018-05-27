@@ -28,7 +28,6 @@ class DNN():
     Implements the CNN for tomographic reconstruction
     on a coarse mesh. Different meshes would be different
     instantiations of the same class.
-
     """
 
     def __init__(self, **kwargs):

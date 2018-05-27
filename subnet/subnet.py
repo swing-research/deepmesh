@@ -94,7 +94,7 @@ class SubNet():
 
     def load_projectors(self, n, dir):
         """Loads n(int) projectors and their pseudoinverses from 
-        provided directory (dir, str)
+        provided directory, dir (str)
         """
         P = np.zeros((n, self.ntri, self.img_size**2))
         Pinv = np.zeros((n, self.img_size**2, self.ntri))
@@ -178,7 +178,8 @@ class SubNet():
         # first we reshape P to get channels last
         # P shape should be (batch_size, img_size, img_size, ntri)
         reshape_P = tf.transpose(tf.reshape(self.P,
-                                            (-1, self.ntri, self.img_size,
+                                            (-1, self.ntri,
+                                             self.img_size,
                                              self.img_size)),
                                  perm=[0, 2, 3, 1], name='reshape_proj')
 
@@ -390,7 +391,7 @@ def main():
     """Evaluation code"""
     if args.eval:
         for orig, meas, name in zip(args.eval_originals,
-                                    args.eval_measurements, 
+                                    args.eval_measurements,
                                     args.eval_name):
 
             test_images = np.load(orig).astype(
