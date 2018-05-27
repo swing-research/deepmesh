@@ -43,7 +43,8 @@ def get_mesh_pts(N, img_size):
            :] = np.stack((t, bdry_points[1:]), axis=1)
     # addition of slack makes points that are not very close to boundary
     slack = 5
-    points[4*n_edge_pts:] = slack+np.random.rand(N-4*n_edge_pts, 2)*(img_size-slack)
+    points[4*n_edge_pts:] = slack + \
+        np.random.rand(N-4*n_edge_pts, 2)*(img_size-slack)
     return points
 
 
@@ -107,7 +108,7 @@ def build_hashmap(tri, img_size):
     for r in range(img_size):
         for c in range(img_size):
             found = False
-            pt = np.array((r+0.5, c+0.5))  # get center of pixel
+            pt = np.array((r+0.5, c+0.5))
 
             # search for pixel in all triangles
             for k in range(len(tri.simplices)):
@@ -127,19 +128,10 @@ def build_hashmap(tri, img_size):
     return pix2tri, tri2pix
 
 
-def generate_random_function(tri, tri2pix, img_size):
-    img = np.zeros((img_size, img_size))
-    for key in tri2pix:
-        g = np.random.rand()
-        for idx in tri2pix[key]:
-            img[idx] = g
-    return img
-
-
-# In[19]:
-
-
 def pickle_dump(fname, arr, protocol=2):
+    """Saves arr as a pkl file, 
+    protocol specified for backwards compatibility
+    """
     if not fname.endswith(".pkl"):
         fname = fname + '.pkl'
 
@@ -150,19 +142,17 @@ def pickle_dump(fname, arr, protocol=2):
 
 
 def pickle_load(fname):
+    """Loads fname pkl file, 
+    and returns the array
+    """
     with open(fname, 'rb') as f:
         return pickle.load(f)
-
-
-# ## make projector matrix
-
-# In[24]:
 
 
 def make_projector(tri2pix, n, img_size):
     """Takes in the hashmap of triangle id to pixel coordinates
     to return the low-dim subspace projection matrix
-    :param tri2pix: triangle_id to pixel map
+    :param tri2pix: map from triangle_id to pixels
     :param n: the number of triangles
     :param img_size: img_size
     """
@@ -172,174 +162,68 @@ def make_projector(tri2pix, n, img_size):
         for pix in pixlist:
             projector[triangle][pix[0]*img_size + pix[1]] = 1.0
     sum_along_axis = projector.sum(axis=1, keepdims=True)
+    # if a triangle did not get any pixel
     sum_along_axis[sum_along_axis == 0] = 1
     projector /= sum_along_axis
     return projector
 
 
-# ## Generate images
+########################################################################
+# Generate meshes using multiprocessing
 
-
-# In[30]:
-
-
-def img_gen(n, img_size, group_prefix):
-
-    out = np.zeros((n, img_size, img_size))
-    fbp = np.zeros((n, img_size, img_size))
-
-    tri, pts = make_mesh(34, img_size) 
-    pix2tri, tri2pix = build_hashmap(tri, img_size)
-
-    theta = np.linspace(0, 180, 5, endpoint=False)
-
-    for i in range(n):
-        out[i] = generate_random_function(tri, tri2pix, img_size)
-        # fbp[i] = iradon(radon(out[i], theta=theta, circle=False),
-        #                 theta=theta, circle=False)
-        # fbp[i] -= fbp[i].min()
-        # fbp[i] /= fbp[i].max()
-
-        # imwrite(group_prefix+'/image_%d.png'%(i), img)
-    np.save(group_prefix+'/mesh_imgs', out)
-    # np.save(group_prefix+'/fbp', fbp)
-
-
-# In[31]:
-
-def main_producer(i, Npoints, Nimages_per_mesh, img_size, dirgroup_prefix):
+def main_producer(i, Npoints, img_size, dirgroup_prefix):
+    # seed
+    np.random.seed()
 
     # make a mesh
     tri, pts = make_mesh(Npoints, img_size)
     Ntriang = len(tri.simplices)
 
-    # dirname
-    dirname = dirgroup_prefix + '_%dtri_%d' % (Ntriang, i)
+    # dirname = dirgroup_prefix + '_%dtri_%d' % (Ntriang, i)
+    dirname = dirgroup_prefix + '_%d'%(Ntriang)
     if not os.path.exists(dirname):
-        os.makedirs(dirname)
+        try:
+            os.makedirs(dirname)
+            os.makedirs(dirname+'/extras')
+        except FileExistsError:
+            # takes care of rare race conditions
+            pass
 
     # build its hashmap
     pix2tri, tri2pix = build_hashmap(tri, img_size)
 
-    # store the hashmap and mesh in the directory
-    pickle_dump(dirname + '/pix2tri', pix2tri)
-    pickle_dump(dirname + '/tri2pix', tri2pix)
-    pickle_dump(dirname + '/mesh', tri)
+    # store the hashmap and mesh in the extras/ maybe used later for graphics
+    pickle_dump(dirname + '/extras/pix2tri%d'%i, pix2tri)
+    pickle_dump(dirname + '/extras/tri2pix%d'%i, tri2pix)
+    pickle_dump(dirname + '/extras/tri%d'%i, tri)
 
     # make the projector
     projector = make_projector(tri2pix, Ntriang, img_size)
 
     # store the projector
-    pickle_dump(dirname + '/P', projector)
-    pickle_dump(dirname + '/Pinv', np.linalg.pinv(projector))
-
-    # generate Nimages for this mesh
-    img_gen(Nimages_per_mesh, tri, tri2pix, img_size, dirname)
+    pickle_dump(dirname + '/P%d'%i, projector)
+    pickle_dump(dirname + '/Pinv%d'%i, np.linalg.pinv(projector))
 
     return None
 
 
-def main(Nmeshes, Npoints, Nimages_per_mesh, img_size, dirgroup_prefix='mesh'):
-    nprocs = min(12, Nmeshes)
+def main(Nmeshes, Npoints, img_size, dirgroup_prefix='mesh'):
+
+    # init multipocessing
+    nprocs = min(4, Nmeshes)
     pool = mp.Pool(processes=nprocs)
 
+    # generate Nmeshes each with same number of triangles
     results = [pool.apply_async(main_producer,
                                 args=(i, Npoints,
-                                      Nimages_per_mesh,
                                       img_size, dirgroup_prefix)) for i in range(Nmeshes)]
 
+    # wait for results
     for p in results:
         p.get()
 
     return None
 
-# ## Multiprocessing module
-
-
-def gen_mesh_and_apply_proj(img, Npoints):
-    # np.random.seed(int(time()))
-    np.random.seed()
-    img_size = img.shape[0]
-    # print((img_size, Npoints))
-
-    tri, pts = make_mesh(Npoints, img_size)
-
-    # number of triangles
-    Ntriang = len(tri.simplices)
-
-    # build its hashmap
-    pix2tri, tri2pix = build_hashmap(tri, img_size)
-
-    # make the projector
-    projector = make_projector(tri2pix, Ntriang, img_size)
-    P_img = projector.dot(img.flatten())
-
-    if ADD_NOISE:
-        noise = np.random.rand(len(P_img))
-        noise[noise > noise_level] = 0
-        P_img += noise
-
-    projected_img = np.linalg.pinv(projector).dot(P_img)
-    projected_img = projected_img.reshape(img_size, img_size)
-
-    return projected_img, projector, P_img
-
-
-def mp_class(nprocs, nmeshes, img, npoints, dirname):
-    # output = mp.Queue()
-
-    pool = mp.Pool(processes=nprocs)
-
-    results = [pool.apply_async(gen_mesh_and_apply_proj, args=(
-        img.copy(), npoints)) for _ in range(nmeshes)]
-
-    # output = [p.get() for p in results]
-    output_img = []
-    projectors = []
-    coefficients = []
-
-    for i, p in enumerate(results):
-        img, proj, coeff = p.get()
-
-        projectors.append(proj)
-        coefficients.append(coeff)
-
-        imwrite(dirname+'/%d.png' % i, img)
-        output_img.append(img)
-
-    return output_img, projectors, coefficients
-
-
-def make_dir(dirname):
-    """if dirname is not present, make a directory dirname"""
-    if not os.path.exists(dirname):
-        os.makedirs(dirname)
-
-    return None
-
-
 if __name__ == "__main__":
-    main(200, 20, 100, 128, 'mesh_gan_meshes')
-
-    # img = face().mean(axis=-1)
-    # img_size = 128
-    # img = imresize(img, (img_size,img_size))/255.0
-
-    # dirname = "./face_100tri_128x128_50meshes_1e-1noise"
-    # make_dir(dirname)
-
-    # imwrite('face.png', img)
-    # output, projectors, coefficients = mp_class(12, 50, img, 65, dirname)
-
-    # output = np.array(output)
-    # projectors = np.array(projectors)
-    # coefficients = np.array(coefficients)
-    # imwrite(dirname+'/result_avg.png', output.mean(axis=0))
-
-    # coefficients = coefficients.reshape(-1)
-    # projectors = projectors.reshape(-1,img_size*img_size)
-
-    # proj_Tproj = projectors.T.dot(projectors) + noise_level*np.eye(img_size*img_size)
-    # final_img = np.linalg.pinv(proj_Tproj).dot(projectors.T.dot(coefficients))
-
-    # imwrite(dirname+'/result_eqn.png', final_img.reshape(img_size,img_size))
+    # 36 points generates a 50 triangle mesh
+    main(10, 36, 128, 'mesh_trial')
