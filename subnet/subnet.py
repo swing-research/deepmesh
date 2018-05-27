@@ -1,16 +1,19 @@
 import os
+import sys
 import glob
 import time
 import numpy as np
 from model import nn
 import tensorflow as tf
 from pickle import load
-import utils.inputpipe as ip
 import matplotlib.pyplot as plt
-from parser import parserMethod
 from scipy.misc import imsave, imread
 import tensorflow.contrib.layers as tcl
 
+## relative imports
+sys.path.append('../utils/')
+print(sys.path)
+from parser_sub_direct import parserMethod
 
 def make_if_not_exist(dirname):
     if not os.path.exists(dirname):
