@@ -10,10 +10,11 @@ import matplotlib.pyplot as plt
 from scipy.misc import imsave, imread
 import tensorflow.contrib.layers as tcl
 
-## relative imports
+# relative imports
 sys.path.append('../utils/')
 print(sys.path)
 from parser_sub_direct import parserMethod
+
 
 def make_if_not_exist(dirname):
     if not os.path.exists(dirname):
@@ -92,7 +93,9 @@ class SubNet():
         return
 
     def load_projectors(self, n, dir):
-        """Loads n(int) projectors and their pseudoinverses from provided directory (dir, str)"""
+        """Loads n(int) projectors and their pseudoinverses from 
+        provided directory (dir, str)
+        """
         P = np.zeros((n, self.ntri, self.img_size**2))
         Pinv = np.zeros((n, self.img_size**2, self.ntri))
 
@@ -328,20 +331,23 @@ class SubNet():
             saver.restore(sess, tf.train.latest_checkpoint(self.LOG_DIR))
             print(self.LOG_DIR)
 
-            out = np.zeros((ntest, 350, 16384))
+            out = np.zeros((ntest, self.nproj, 16384))
 
             for samp in range(ntest):
-                input_img = np.zeros((50, 128, 128, 1))
-                input_measurements = np.zeros((50, 128, 128, 1))
+                input_img = np.zeros((self.nbatch, 128, 128, 1))
+                input_measurements = np.zeros((self.nbatch, 128, 128, 1))
 
-                input_img[:50] = batch[0][samp].reshape(128, 128, 1)
-                input_measurements[:50] = batch[1][samp].reshape(128, 128, 1)
+                input_img[:self.nbatch] = batch[0][samp].reshape(128, 128, 1)
+                input_measurements[:self.nbatch] = batch[1][samp].reshape(
+                    128, 128, 1)
 
-                for i in range(7):
-                    p = self.proj[i*50:(i+1)*50]
-                    pinv = self.proj_inv[i*50:(i+1)*50]
+                for i in range(self.nproj//self.nbatch):
+                    p = self.proj[i*self.nbatch:(i+1)*self.nbatch]
+                    pinv = self.proj_inv[i*self.nbatch:(i+1)*self.nbatch]
 
-                    loss, out[samp, i*50:(i+1)*50], proj_out = sess.run(
+                    loss,
+                    out[samp, i*self.nbatch:(i+1)*self.nbatch],
+                    proj_out = sess.run(
                         [self.loss, self.out, self.proj_out], feed_dict={
                             self.true_img: input_img,
                             self.P: p,
@@ -352,7 +358,7 @@ class SubNet():
 
                     print('Loss on test samples = %f' % loss)
 
-            np.save('%s_out%d.npy' % (test_name, 350), out)
+            np.save('%s_out%d.npy' % (test_name, self.nproj), out)
             print('Eval run successfully!')
 
         return None
@@ -381,16 +387,16 @@ def main():
         else:
             net.train(rerun=True, ckpt_offset=args.resume_from)
 
-    """Evaluation code. Comment if not required"""
-    test_images = np.load('geo_originals.npy').astype(
-        'float32').reshape(-1, 128, 128, 1)
-    measurements = np.load('geo_pos_recon_10db.npy').astype(
-        'float32').reshape(-1, 128, 128, 1)
-    net.eval((test_images, measurements), 'recon_tr10db_t10db')
+    """Evaluation code"""
+    if args.eval:
+        for orig, meas, name in zip(args.eval_originals,
+                                    args.eval_measurements, args.eval_name):
 
-    measurements = np.load('geo_pos_recon_infdb.npy').astype(
-        'float32').reshape(-1, 128, 128, 1)
-    net.eval((test_images, measurements), 'recon_tr10db_tinfdb')
+            test_images = np.load(args.eval_originals).astype(
+                'float32').reshape(-1, 128, 128, 1)
+            measurements = np.load(args.eval_measurements).astype(
+                'float32').reshape(-1, 128, 128, 1)
+            net.eval((test_images, measurements), args.eval_name)
 
     return None
 

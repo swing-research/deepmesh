@@ -25,6 +25,17 @@ def parserMethod():
     parser.add_argument("-bs", "--batch_size", type=int, default=50,
                         help='mini-batch size')
 
+    # eval specific arguments
+    parser.add_argument("-e", "--eval", type=bool,
+                        default=True, help="Evaluation (on other dataset) flag")
+    parser.add_argument("-e_orig", "--eval_originals", type=list,
+                        default=[], help="list of strings with names of original .npy arrays")
+    parser.add_argument("-e_meas", "--eval_measurements", type=list,
+                        default=[], help="list of strings with names of measurement .npy arrays")
+    parser.add_argument("-e_name", "--eval_name", type=list,
+                        default=[], help="Name to be given to the evaluation experiments")
+
+
     # subnet specific arguments
     parser.add_argument('-pdir', '--projectors_dir',
                         default='./../meshes/',
@@ -35,7 +46,6 @@ def parserMethod():
                         default=50, type=int, help='Number of triangles per mesh')
 
     args = parser.parse_args()
-    # test(args)
 
     return args
 
