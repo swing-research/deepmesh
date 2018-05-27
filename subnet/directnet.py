@@ -1,13 +1,16 @@
 import os
 import time
 import numpy as np
-from model import net
-from pickle import load
+from model import nn
 import tensorflow as tf
 import matplotlib.pyplot as plt
 from scipy.misc import imsave, imread
 import tensorflow.contrib.layers as tcl
-from .utils.parser import parserMethod
+
+# relative imports
+sys.path.append('../utils/')
+print(sys.path)
+from parser_sub_direct import parserMethod
 
 
 def make_if_not_exist(dirname):
@@ -112,6 +115,7 @@ class DNN():
     def build_model(self):
         self.out, self.reg_loss = self.model()
 
+        # clipping helped achieve better reconstruction results
         self.out = tf.clip_by_value(self.out, 0.0, 1.0, name='final_clip')
 
         # get projection of actual image
@@ -261,12 +265,17 @@ def main():
         else:
             net.train(rerun=True, ckpt_offset=args.resume_from)
 
-    """Evaluation code. Comment if not required"""
-    test_images = np.load('random_samples.npy').astype(
-        'float32').reshape(-1, 128, 128, 1)
-    measurements = np.load('random_samples_infdb.npy').astype(
-        'float32').reshape(-1, 128, 128, 1)
-    net.eval(test_images, measurements, 'direct_tr10db_trandom')
+    """Evaluation code"""
+    if args.eval:
+        for orig, meas, name in zip(args.eval_originals,
+                                    args.eval_measurements, 
+                                    args.eval_name):
+
+            test_images = np.load(orig).astype(
+                'float32').reshape(-1, 128, 128, 1)
+            measurements = np.load(meas).astype(
+                'float32').reshape(-1, 128, 128, 1)
+            net.eval((test_images, measurements), name)
 
     return None
 

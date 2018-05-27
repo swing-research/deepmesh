@@ -390,13 +390,14 @@ def main():
     """Evaluation code"""
     if args.eval:
         for orig, meas, name in zip(args.eval_originals,
-                                    args.eval_measurements, args.eval_name):
+                                    args.eval_measurements, 
+                                    args.eval_name):
 
-            test_images = np.load(args.eval_originals).astype(
+            test_images = np.load(orig).astype(
                 'float32').reshape(-1, 128, 128, 1)
-            measurements = np.load(args.eval_measurements).astype(
+            measurements = np.load(meas).astype(
                 'float32').reshape(-1, 128, 128, 1)
-            net.eval((test_images, measurements), args.eval_name)
+            net.eval((test_images, measurements), name)
 
     return None
 
