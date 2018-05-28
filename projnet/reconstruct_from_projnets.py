@@ -2,8 +2,6 @@ import keras
 from keras.models import Model
 import numpy as np
 from scipy import misc
-import matplotlib as mpl
-mpl.use('Agg')
 
 import sys
 sys.path.insert(0, '../utils/')
