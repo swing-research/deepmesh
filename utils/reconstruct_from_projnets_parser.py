@@ -13,7 +13,7 @@ def reconstruct_from_projnets_parser():
                         type=int, default=20)
     
     parser.add_argument('--lam', '--lambda', help='TV regularization parameter', 
-                        type=int, default=4e-3)
+                        type=float, default=4e-3)
     
     parser.add_argument('--nc', '--nocoefs', help='Use if already calculated coefficients',
                         action='store_false')
