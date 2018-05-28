@@ -14,7 +14,7 @@ We use neural network architectures inspired by U-nets. All networks are given a
 - **SubNet**: This network estimates projections on *mutliple* random subspaces while still maintaining robustness inherent in ProjNets.
 - To reconstruct, once we know the estimated projections in these random low-dimensional subspaces we can build a linear system by concatenating the basis vectors of these low-dimensional subpsaces and solving the linear system.
 
-We compare our results with a system that is trained to map the same input to the model directly thereby bypassing the need for projections and solving linear systems. We show that our method achieves:
+We compare our results with a system that is trained to map the same input to the model directly. We show that our method achieves:
 - Robustness to noise and arbitrary deviations from noise model
 - Robustness against dataset used for training 
 
