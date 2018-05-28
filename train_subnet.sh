@@ -1,0 +1,2 @@
+ python3 subnet/subnet.py -dnpy originals20k.npy -mnpy custom25_0db.npy -n test -e_orig ['geo_originals.npy'] -e_meas ['geo_pos_recon_0db.npy'] -e_name ['geo_tr0_t0'] -pdir mesh_trial_50/ -nproj 10 -ntri 50
+ python3 subnet/direct.py -dnpy originals20k.npy -mnpy custom25_0db.npy -n test -t True -e True -e_orig ['geo_originals.npy'] -e_meas ['geo_pos_recon_0db.npy'] -e_name ['geo_tr0_t0']
