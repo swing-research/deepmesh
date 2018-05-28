@@ -184,6 +184,7 @@ def store_mats(F, nsensors):
     return
 
 def gen_mask(points, grid_size):
+    """Gets the convex hull of sensor locations"""
     from matplotlib.path import Path
     from scipy.spatial import ConvexHull
     hull = ConvexHull(points)
