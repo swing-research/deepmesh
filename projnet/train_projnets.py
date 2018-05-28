@@ -8,12 +8,11 @@ import projnet
 from projnet import make_cnn, compile_fit_cnn, split_npys
 
 def get_P_Pinv(mesh_number):
-    path = '../meshes/mesh' + str(mesh_number) + '/'
-    print('Getting mesh from: ' + path)
+    path = '../meshes_50/'
     
-    with open(path + 'P.pkl', 'rb') as m:
+    with open(path + 'P' + str(mesh_number) + '.pkl', 'rb') as m:
         P = pickle.load(m)
-    with open(path + 'Pinv.pkl', 'rb') as m:
+    with open(path + 'Pinv' + str(mesh_number) + '.pkl', 'rb') as m:
         Pinv = pickle.load(m)
     
     return P, Pinv
@@ -46,7 +45,7 @@ def main():
         # Make each ProjNet
         model = make_cnn(channels=32)
         name= root + str(mesh) + '.h5'
-        compile_fit_cnn(model, batch_size=50, epochs=25, lr=1e-3, model_name=name, 
+        compile_fit_cnn(model, batch_size=50, epochs=2, lr=1e-3, model_name=name, 
                         training_input=training_input, test_input=test_input, 
                         training_truth=training_truth, test_truth=test_truth)
         
