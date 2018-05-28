@@ -5,13 +5,20 @@ We intend to make it as simple as possible to reproduce our results. If somethin
 
 ## Summary
 - In this work, we come up with a learning scheme to regularize ill-posed inverse problems. Instead of learning to go from measurements to the model directly, we learn to estimate certain random projections of the model. Specifically, we estimate projections on many random Delaunay triangulations of the model. Later, we combine them using regularized iterative schemes.
-- As an example of very ill-posed inverse problem we choose the traveltime tomography problem, where a few sensors are placed on the image domain and line-integrals are calculated along lines connecting pairs of sensors.  
+- As an example of very ill-posed inverse problem we choose the traveltime tomography problem, where a few sensors are placed on the image domain and line-integrals are calculated along lines connecting pairs of sensors. 
+- We want to be able to work in environments where data is extremely scarce. Hence, we train on standard datasets ([LSUN](https://arxiv.org/abs/1506.03365), [celebA](http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html) etc.) and test on arbitrary image patches from [BP2004](http://software.seg.org/datasets/2D/2004_BP_Vel_Benchmark/) velocity dataset. We show that our method does not try to *paint* dataset-specific structures, instead it captures the global shapes much more faithfully. We use the signal-to-noise ratio as a metric to quantify the quality of our reconstructions.
 
 ### Scheme
 We use neural network architectures inspired by U-nets. All networks are given a non-negative least squares reconstuction input from measurements. This is to *warm-start* the network as the network need not learn the mapping from measurement domain back to image domain.
 - **ProjNets**: These networks are trained to estimate projections on *one* random subspace from given input.
 - **SubNet**: This network estimates projections on *mutliple* random subspaces while still maintaining robustness inherent in ProjNets.
 - To reconstruct, once we know the estimated projections in these random low-dimensional subspaces we can build a linear system by concatenating the basis vectors of these low-dimensional subpsaces and solving the linear system.
+
+We compare our results with a system that is trained to map the same input to the model directly thereby bypassing the need for projections and solving linear systems. We show that our method achieves:
+- Robustness to noise and arbitrary deviations from noise model
+- Robustness against dataset used for training 
+
+To see all the results, the scheme and the rationale explained in detail, please look at our paper (link coming soon).
 
 ## Code
 
@@ -89,17 +96,19 @@ As you have saved the stacked basis functions and coefficients, you do not need 
 ```console
 python3 reconstruct_from_projnets.py --lam=0.002 --path=reconstructions_new_lam --b=basis_40nets.npy --c=coefs_40nets.npy --nc
 ```
-## SubNet
+## SubNet, DirectNet
 
-The subspace network (SubNet), takes the basis for the random projection as an input along with the measurements. One can use `subnet/subnet.py` to train the subnet. `subnet.py` allows for resuming training from a particular checkpoint and also, skipping training and moving directly to evaluation on required datasets. The usage is as follows:
+The subspace network (SubNet), takes the basis for the random projection as an input along with the measurements. One can use `subnet/subnet.py` to train the subnet. `subnet.py` allows for resuming training from a particular checkpoint and also, skipping training and moving directly to evaluation on required datasets. We have a common parser for `subnet.py`, `directnet.py` and `reconstruct_from_subnet.py` as they share many same arguments. The parser arguments are as below::
 
 ```console
 usage: subnet.py [-h] [-ni NITER] [-dnpy DATA_ARRAY] [-mnpy MEASUREMENT_ARRAY]
                  [-ntrain TRAINING_SAMPLES] [-t TRAIN] [-r_iter RESUME_FROM]
-                 [-n NAME] [-lr LEARNING_RATE] [-bs BATCH_SIZE] [-e EVAL]
-                 [-e_orig EVAL_ORIGINALS] [-e_meas EVAL_MEASUREMENTS]
-                 [-e_name EVAL_NAME] [-pdir PROJECTORS_DIR]
-                 [-nproj NUM_PROJECTORS_TO_USE] [-ntri DIM_RAND_SUBSPACE]
+                 [-n NAME] [-lr LEARNING_RATE] [-bs BATCH_SIZE]
+                 [-i_s IMG_SIZE] [-e EVAL] [-e_orig EVAL_ORIGINALS]
+                 [-e_meas EVAL_MEASUREMENTS] [-e_name EVAL_NAME]
+                 [-pdir PROJECTORS_DIR] [-nproj NUM_PROJECTORS_TO_USE]
+                 [-ntri DIM_RAND_SUBSPACE] [-r_orig RECON_ORIGINALS]
+                 [-r_coefs RECON_COEFFICIENTS] [-m MASK]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -122,6 +131,8 @@ optional arguments:
                         learning rate to be used for training
   -bs BATCH_SIZE, --batch_size BATCH_SIZE
                         mini-batch size
+  -i_s IMG_SIZE, --img_size IMG_SIZE
+                        image size
   -e EVAL, --eval EVAL  Evaluation (on other dataset) flag
   -e_orig EVAL_ORIGINALS, --eval_originals EVAL_ORIGINALS
                         list of strings with names of original .npy arrays
@@ -135,14 +146,25 @@ optional arguments:
                         Number of projector matrices to use
   -ntri DIM_RAND_SUBSPACE, --dim_rand_subspace DIM_RAND_SUBSPACE
                         Number of triangles per mesh
+  -r_orig RECON_ORIGINALS, --recon_originals RECON_ORIGINALS
+                        npy array of originals to compare against
+  -r_coefs RECON_COEFFICIENTS, --recon_coefficients RECON_COEFFICIENTS
+                        npy array of coefficients to use
+  -m MASK, --mask MASK  Mask to apply for convex hull of sensors
 
 ```
 
 One must provide the `-dnpy` and `-mnpy` arguments which correspond to the data and the measurements numpy arrays. Along with that, a directory which has all the basis vectors must be provided via `-pdir` argument. Note that running the training does not require you to be in the subnet folder. 
 
 ```console
-python3 subnet/subnet.py -niter 20000 -dnpy 'originals20k.npy' -mnpy 'custom25_0db.npy' -n test_subnet -e_orig ['geo_originals.npy','geo_originals.npy','geo_originals.npy'] -e_meas ['geo_pos_recon_0db.npy','geo_pos_recon_10db.npy','geo_pos_recon_infdb.npy'] -e_name ['geo_tr0_t0','geo_tr0_t10','geo_tr0_tinf'] -pdir 'matnet_meshes/' -nproj 350 -ntri 50
+python3 subnet/subnet.py -niter 20000 -dnpy 'originals20k.npy' -mnpy 'custom25_10db.npy' -n test_subnet -e_orig [geo_originals.npy','geo_originals.npy'] -e_meas ['geo_pos_recon_10db.npy','geo_pos_recon_infdb.npy'] -e_name ['geo_tr0_t10','geo_tr0_tinf'] -pdir 'meshes/' -nproj 350 -ntri 50
 
+```
+
+To reconstruct from SubNet, one needs to run `reconstruct_from_subnet.py`. This file takes the coefficients calculated and the projections and runs an iterative projected least squares. Note that since we only train one network for all subspaces we need not use any extra regularization (like TV) to reconstruct the model. An example usage is given below:
+
+```console
+python3 subnet/subnet.py -lr 0.0005 -r_orig 'geo_originals.npy' -r_coef 'geo_tr10_tinf' -m 'mask.npy' -nproj 350 -ntri 50
 ```
 
 ## Direct inversion
@@ -150,7 +172,7 @@ python3 subnet/subnet.py -niter 20000 -dnpy 'originals20k.npy' -mnpy 'custom25_0
 The direct net uses the same parser as subnet. An example usage is given below for reference:
 
 ```console
-python3 subnet/directnet.py -niter 20000 -dnpy 'originals20k.npy' -mnpy 'custom25_0db.npy' -n test_subnet -e_orig ['geo_originals.npy','geo_originals.npy','geo_originals.npy'] -e_meas ['geo_pos_recon_0db.npy','geo_pos_recon_10db.npy','geo_pos_recon_infdb.npy'] -e_name ['geo_tr0_t0','geo_tr0_t10','geo_tr0_tinf']
+python3 subnet/directnet.py -niter 20000 -dnpy 'originals20k.npy' -mnpy 'custom25_0db.npy' -n test_subnet -e_orig [geo_originals.npy','geo_originals.npy'] -e_meas ['geo_pos_recon_10db.npy','geo_pos_recon_infdb.npy'] -e_name ['geo_tr0_t10','geo_tr0_tinf']
 
 ```
 
