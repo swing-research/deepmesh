@@ -180,7 +180,9 @@ def main_producer(i, Npoints, img_size, dirgroup_prefix):
     Ntriang = len(tri.simplices)
 
     # dirname = dirgroup_prefix + '_%dtri_%d' % (Ntriang, i)
-    dirname = '../'+dirgroup_prefix + '_%d'%(Ntriang)
+    # get head directory
+    head_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    dirname = head_dir+'/'+dirgroup_prefix+'_%d'%(Ntriang)
     if not os.path.exists(dirname):
         try:
             os.makedirs(dirname)
