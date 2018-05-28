@@ -38,7 +38,7 @@ optional arguments:
 For example, to train 50 ProjNets with 10,000 training images, 100 validation images and save them in ```my_nets``` (ensure this directory exists), we can run the following:
 ``` console
 cd projnet/
-python train_projnets.py --nets=50 --imgs=10000 --val=10 --path='my_nets' --orig=../originals20k.npy --input=../custom25_infdb.npy
+python3 train_projnets.py --nets=50 --imgs=10000 --val=10 --path='my_nets' --orig=../originals20k.npy --input=../custom25_infdb.npy
 ```
 
 ## Reconstruct from trained ProjNets
@@ -75,14 +75,14 @@ optional arguments:
 For example, to reconstruct from 40 networks in ```my_nets``` with a regularization parameter of 0.003 and store the reconstructions in ```reconstructions```, we can run the following:
 ```console
 cd projnet/
-python reconstruct_from_projnets.py --nets=40 --projnets=my_nets --lam=0.003 --path=reconstructions --b=basis_40nets.npy --c=coefs_40nets.npy
+python3 reconstruct_from_projnets.py --nets=40 --projnets=my_nets --lam=0.003 --path=reconstructions --b=basis_40nets.npy --c=coefs_40nets.npy
 ```
 
 The above command stores the stacked basis functions and stacked coefficients in ```basis.npy``` and ```coefs.npy```.
 It is possible that you may wish to try a different regularization parameter for reconstruction. 
 As you have saved the stacked basis functions and coefficients, you do not need to calculate these again. You can use the ```--nc``` option:
 ```console
-python reconstruct_from_projnets.py --lam=0.002 --path=reconstructions_new_lam --b=basis_40nets.npy --c=coefs_40nets.npy --nc
+python3 reconstruct_from_projnets.py --lam=0.002 --path=reconstructions_new_lam --b=basis_40nets.npy --c=coefs_40nets.npy --nc
 ```
 ## SubNet
 
