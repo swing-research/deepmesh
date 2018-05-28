@@ -11,7 +11,7 @@ We intend to make it as simple as possible to reproduce our results. If somethin
 - Results
 
 ## Training multiple ProjNets
-To train multiple ProjNets, use ```python projnet/train_projnets.py ```. The arguments are as follows:
+To train multiple ProjNets, use ```projnet/train_projnets.py ```. The arguments are as follows:
 ```console
 usage: train_projnets.py [-h] [--imgs IMGS] [--val VAL] [--orig ORIG]
                          [--input INPUT] [--nets NETS] [--path PATH]
@@ -32,4 +32,10 @@ optional arguments:
                         Directory to store ProjNets. Ensure this directory
                         exists.
 
+```
+
+For example, to train 50 ProjNets with 10,000 training images, 100 validation images and save them in ``` my_nets ```, we can run the following:
+``` console
+cd projnet/
+python train_projnets.py --nets=50 --imgs=10000 --val=10 --path='my_nets' --orig=../originals20k.npy --input=../custom25_infdb.npy
 ```
