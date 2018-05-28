@@ -78,7 +78,7 @@ cd projnet/
 python reconstruct_from_projnets.py --nets=40 --projnets=my_nets --lam=0.003 --path=reconstructions --b=basis_40nets.npy --c=coefs_40nets.npy
 ```
 
-The above command stores the stacked basis functions and stacked coefficients in ```basis.npy```` and ```coefs.npy```.
+The above command stores the stacked basis functions and stacked coefficients in ```basis.npy``` and ```coefs.npy```.
 It is possible that you may wish to try a different regularization parameter for reconstruction. 
 As you have saved the stacked basis functions and coefficients, you do not need to calculate these again. You can use the ```--nc``` option:
 ```console
