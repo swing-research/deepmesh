@@ -109,6 +109,9 @@ class SubNet():
 
         print('Projectors read in!')
 
+        # storing projectors for eval later
+        np.save('p%d.npy'%len(P))
+
         return P, Pinv
 
     def read_data(self):

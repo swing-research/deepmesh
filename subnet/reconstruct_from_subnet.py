@@ -17,34 +17,42 @@ import numpy as np
 from SNRab import *
 from scipy.misc import imsave, imread
 
+head_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(head_dir+'/utils/')
+from parser_sub_direct import parserMethod
 
-idstring = sys.argv[1]
+args = parserMethod()
+nproj = args.num_projectors_to_use
+mask_loc = args.mask
+idstring = args.recon_coefficients
+orig_loc = args.recon_originals
+ntri = args.dim_rand_subspace
+lr = args.learning_rate
+im_s = args.img_size
+
 name = idstring + '.png'
 
-P = np.load('p350.npy')
-out = np.load(idstring+'_out350.npy')
-mask = np.load('mask.npy').reshape(128, 128)
-orig = np.load('geo_originals.npy')[:, :, :, 0]
+P = np.load('p%d.npy'%nproj)
+out = np.load(idstring+'_out%d.npy'%nproj)
+mask = np.load(mask_loc).reshape(im_s, im_s)
+orig = np.load(orig_loc)[:, :, :, 0]
 print("P.shape:%s" % str(P.shape))
 print("out.shape:%s" % str(out.shape))
 
 ntest = len(out)
 print(out.shape)
 print('Running PLS over %d images' % ntest)
-x_est = np.zeros((ntest, 128, 128))
+x_est = np.zeros((ntest, im_s, im_s))
 
-pflat = P.reshape(-1, 16384)
+pflat = P.reshape(-1, im_s*im_s)
 print("Number of test samples:%d" % ntest)
-# for k in range(ntest):
-for k in [1]:
-    c = np.zeros(50*350)
+for k in range(ntest):
+    c = np.zeros(ntri*nproj)
 
-    for i in range(350):
-        c[i*50:(i+1)*50] = np.matmul(P[i], out[k, i])
+    for i in range(nproj):
+        c[i*ntri:(i+1)*ntri] = np.matmul(P[i], out[k, i])
 
-    x = np.zeros(16384)
-
-    lr = 0.005
+    x = np.zeros(im_s*im_s)
 
     for it in range(2000):
         g = np.matmul(pflat, x) - c
@@ -53,17 +61,17 @@ for k in [1]:
         x[x <= 0] = 0.0
         x[x >= 1] = 1.0
         if (it+1) % 100 == 0:
-            opt, _, _, _ = SNRab(mask*orig[k], mask*x.reshape(128, 128))
+            opt, _, _, _ = SNRab(mask*orig[k], mask*x.reshape(im_s, im_s))
             print('Iteration %d: %f' % (it, opt))
-            imsave(name, mask*x.reshape(128, 128))
+            imsave(name, mask*x.reshape(im_s, im_s))
 
-    x_est[k] = x.reshape(128, 128)
+    x_est[k] = x.reshape(im_s, im_s)
     print('finished %d images.' % (k+1))
     imsave('x_est%d.png' % k, x_est[k])
 
-g = np.zeros((128*2, 128*ntest))
+g = np.zeros((im_s*2, im_s*ntest))
 for i in range(ntest):
-    g[:128, 128*i:128*(i+1)] = mask*orig[i]
-    g[128:, 128*i:128*(i+1)] = mask*x_est[i]
+    g[:im_s, im_s*i:im_s*(i+1)] = mask*orig[i]
+    g[im_s:, im_s*i:im_s*(i+1)] = mask*x_est[i]
 
 imsave(name, g)

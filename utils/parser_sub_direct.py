@@ -24,6 +24,8 @@ def parserMethod():
                         help='learning rate to be used for training')
     parser.add_argument("-bs", "--batch_size", type=int, default=50,
                         help='mini-batch size')
+    parser.add_argument("-i_s", "--img_size", type=int, default=128,
+                        help='image size')
 
     # eval specific arguments
     parser.add_argument("-e", "--eval", type=bool,
@@ -44,6 +46,15 @@ def parserMethod():
                         default=350, type=int, help='Number of projector matrices to use')
     parser.add_argument('-ntri', '--dim_rand_subspace',
                         default=50, type=int, help='Number of triangles per mesh')
+
+    # reconstruction specific arguments
+    parser.add_argument('-r_orig', '--recon_originals',
+                        default='', type=str, help='npy array of originals to compare against')
+    parser.add_argument('-r_coefs', '--recon_coefficients',
+                        default='', type=str, help='npy array of coefficients to use')
+    parser.add_argument('-m', '--mask',
+                        default='', type=str, help='Mask to apply for convex hull of sensors')
+    
 
     args = parser.parse_args()
 
