@@ -3,14 +3,19 @@ Repository for 'Deep Mesh Projectors for Inverse Problems'
 
 We intend to make it as simple as possible to reproduce our results. If something is missing or you would like some guidance, please reach out to us.
 
-## Skeleton of README (tentative)
-- Idea, equation (9) from paper
-- Explain ProjNet (how to run included here)
-- Motivate SubNet (how to run included here)
-- Explain reconstruction scheme (TV no TV, PLS)
-- Results
+## Summary
+- In this work, we come up with a learning scheme to regularize ill-posed inverse problems. Instead of learning to go from measurements to the model directly, we learn to estimate certain random projections of the model. Specifically, we estimate projections on many random Delaunay triangulations of the model. Later, we combine them using regularized iterative schemes.
+- As an example of very ill-posed inverse problem we choose the traveltime tomography problem, where a few sensors are placed on the image domain and line-integrals are calculated along lines connecting pairs of sensors.  
 
-## Training multiple ProjNets
+### Scheme
+We use neural network architectures inspired by U-nets. All networks are given a non-negative least squares reconstuction input from measurements. This is to *warm-start* the network as the network need not learn the mapping from measurement domain back to image domain.
+- **ProjNets**: These networks are trained to estimate projections on *one* random subspace from given input.
+- **SubNet**: This network estimates projections on *mutliple* random subspaces while still maintaining robustness inherent in ProjNets.
+- To reconstruct, once we know the estimated projections in these random low-dimensional subspaces we can build a linear system by concatenating the basis vectors of these low-dimensional subpsaces and solving the linear system.
+
+## Code
+
+### Training multiple ProjNets
 To train multiple ProjNets, use ```projnet/train_projnets.py```.
 The arguments are as follows:
 ```console
