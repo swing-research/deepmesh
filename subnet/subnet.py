@@ -11,8 +11,8 @@ from scipy.misc import imsave, imread
 import tensorflow.contrib.layers as tcl
 
 # relative imports
-sys.path.append('../utils/')
-print(sys.path)
+head_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(head_dir+'/utils/')
 from parser_sub_direct import parserMethod
 
 
@@ -275,7 +275,7 @@ class SubNet():
                 measurements = self.measurements_train[idx]
 
                 idx = np.random.choice(
-                    np.arange(self.nproj), self.nbatch, replace=False)
+                    np.arange(self.nproj), self.nbatch)
                 p = self.proj[idx]
                 pinv = self.proj_inv[idx]
 
@@ -374,7 +374,7 @@ def main():
                  niters=args.niter,
                  data_npy=args.data_array,
                  meas_npy=args.measurement_array,
-                 ntrain=args.ntrain,
+                 ntrain=args.training_samples,
                  nbatch=args.batch_size,
                  lr=args.learning_rate,
                  ntri=args.dim_rand_subspace,
