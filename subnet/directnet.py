@@ -256,7 +256,6 @@ def main():
               ntrain=args.training_samples,
               lr=args.learning_rate,
               nbatch=args.batch_size,
-              niters=args.niter,
               LOG_DIR='results/'+args.name)
 
     if args.train:
