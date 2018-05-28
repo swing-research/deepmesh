@@ -84,3 +84,68 @@ As you have saved the stacked basis functions and coefficients, you do not need 
 ```console
 python reconstruct_from_projnets.py --lam=0.002 --path=reconstructions_new_lam --b=basis_40nets.npy --c=coefs_40nets.npy --nc
 ```
+## SubNet
+
+The subspace network (SubNet), takes the basis for the random projection as an input along with the measurements. One can use `subnet/subnet.py` to train the subnet. `subnet.py` allows for resuming training from a particular checkpoint and also, skipping training and moving directly to evaluation on required datasets. The usage is as follows:
+
+```console
+usage: subnet.py [-h] [-ni NITER] [-dnpy DATA_ARRAY] [-mnpy MEASUREMENT_ARRAY]
+                 [-ntrain TRAINING_SAMPLES] [-t TRAIN] [-r_iter RESUME_FROM]
+                 [-n NAME] [-lr LEARNING_RATE] [-bs BATCH_SIZE] [-e EVAL]
+                 [-e_orig EVAL_ORIGINALS] [-e_meas EVAL_MEASUREMENTS]
+                 [-e_name EVAL_NAME] [-pdir PROJECTORS_DIR]
+                 [-nproj NUM_PROJECTORS_TO_USE] [-ntri DIM_RAND_SUBSPACE]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -ni NITER, --niter NITER
+                        Number of iterations fot the training to run
+  -dnpy DATA_ARRAY, --data_array DATA_ARRAY
+                        Numpy array of the data
+  -mnpy MEASUREMENT_ARRAY, --measurement_array MEASUREMENT_ARRAY
+                        Numpy array of the measurements
+  -ntrain TRAINING_SAMPLES, --training_samples TRAINING_SAMPLES
+                        Number of training samples
+  -t TRAIN, --train TRAIN
+                        Training flag
+  -r_iter RESUME_FROM, --resume_from RESUME_FROM
+                        resume training from r_iter checkpoint, if 0 start
+                        training afresh
+  -n NAME, --name NAME  Name of directory under results/ where the results of
+                        the current run will be stored
+  -lr LEARNING_RATE, --learning_rate LEARNING_RATE
+                        learning rate to be used for training
+  -bs BATCH_SIZE, --batch_size BATCH_SIZE
+                        mini-batch size
+  -e EVAL, --eval EVAL  Evaluation (on other dataset) flag
+  -e_orig EVAL_ORIGINALS, --eval_originals EVAL_ORIGINALS
+                        list of strings with names of original .npy arrays
+  -e_meas EVAL_MEASUREMENTS, --eval_measurements EVAL_MEASUREMENTS
+                        list of strings with names of measurement .npy arrays
+  -e_name EVAL_NAME, --eval_name EVAL_NAME
+                        Name to be given to the evaluation experiments
+  -pdir PROJECTORS_DIR, --projectors_dir PROJECTORS_DIR
+                        directory where all projector matrices are stored
+  -nproj NUM_PROJECTORS_TO_USE, --num_projectors_to_use NUM_PROJECTORS_TO_USE
+                        Number of projector matrices to use
+  -ntri DIM_RAND_SUBSPACE, --dim_rand_subspace DIM_RAND_SUBSPACE
+                        Number of triangles per mesh
+
+```
+
+One must provide the `-dnpy` and `-mnpy` arguments which correspond to the data and the measurements numpy arrays. Along with that, a directory which has all the basis vectors must be provided via `-pdir` argument. Note that running the training does not require you to be in the subnet folder. 
+
+```console
+python3 subnet/subnet.py -niter 20000 -dnpy 'originals20k.npy' -mnpy 'custom25_0db.npy' -n test_subnet -e_orig ['geo_originals.npy','geo_originals.npy','geo_originals.npy'] -e_meas ['geo_pos_recon_0db.npy','geo_pos_recon_10db.npy','geo_pos_recon_infdb.npy'] -e_name ['geo_tr0_t0','geo_tr0_t10','geo_tr0_tinf'] -pdir 'matnet_meshes/' -nproj 350 -ntri 50
+
+```
+
+## Direct inversion
+
+The direct net uses the same parser as subnet. An example usage is given below for reference:
+
+```console
+python3 subnet/directnet.py -niter 20000 -dnpy 'originals20k.npy' -mnpy 'custom25_0db.npy' -n test_subnet -e_orig ['geo_originals.npy','geo_originals.npy','geo_originals.npy'] -e_meas ['geo_pos_recon_0db.npy','geo_pos_recon_10db.npy','geo_pos_recon_infdb.npy'] -e_name ['geo_tr0_t0','geo_tr0_t10','geo_tr0_tinf']
+
+```
+
