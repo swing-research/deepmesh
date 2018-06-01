@@ -18,7 +18,7 @@ We compare our results with a system that is trained to map the same input to th
 - Robustness to noise and arbitrary deviations from noise model
 - Robustness against dataset used for training 
 
-To see all the results, the scheme and the rationale explained in detail, please look at our paper (link coming soon).
+To see all the results, the scheme and the rationale explained in detail, please look at our [paper](https://arxiv.org/pdf/1805.11718.pdf).
 
 ## Code
 
