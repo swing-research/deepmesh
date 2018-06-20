@@ -20,6 +20,10 @@ We compare our results with a system that is trained to map the same input to th
 
 To see all the results, the scheme and the rationale explained in detail, please look at our [paper](https://arxiv.org/pdf/1805.11718.pdf).
 
+## Getting started
+1. Prepare training data. 20,000 training images and four geo images are available here: https://uofi.app.box.com/v/deepmesh-data .
+2. Generate meshes from utils/mesh_code.py . By default this code generates ten 128 x 128 meshes with 50 triangles.
+
 ## Code
 
 ### Training multiple ProjNets

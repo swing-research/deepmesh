@@ -71,7 +71,7 @@ def apply_P(x):
         
 def apply_Pinv(x):
     # This method applies the pseudoinverse of the basis functions to get an
-    # estiamte of the projection of the original image.
+    # estimate of the projection of the original image.
     
     import keras
      
