@@ -22,7 +22,7 @@ To see all the results, the scheme and the rationale explained in detail, please
 
 ## Getting started
 1. Prepare training data. 20,000 training images and four geo images are available here: https://uofi.app.box.com/v/deepmesh-data .
-2. Generate meshes from utils/mesh_code.py . By default this code generates ten 128 x 128 meshes with 50 triangles. 
+2. Use python3 to generate meshes from utils/mesh_code.py . By default this code generates ten 128 x 128 meshes with 50 triangles. 
 In our paper we used 130 meshes to train 130 ProjNets and 350 meshes for SubNet.
 
 ## Code
