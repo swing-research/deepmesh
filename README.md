@@ -1,5 +1,5 @@
 # Deepmesh
-Repository for 'Deep Mesh Projectors for Inverse Problems'
+Repository for 'Random Mesh Projectors for Inverse Problems' [paper](https://openreview.net/pdf?id=HyGcghRct7)
 
 We intend to make it as simple as possible to reproduce our results. If something is missing or you would like some guidance, please reach out to us.
 
